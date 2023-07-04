@@ -1,9 +1,9 @@
-require("dotenv").config(); // load .env variables
-const { Router } = require("express"); // import router from express
-const bcrypt = require("bcryptjs"); // import bcrypt to hash passwords
-const jwt = require("jsonwebtoken"); // import jwt to sign tokens
+require("dotenv").config();
+const { Router } = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const router = Router(); // create router to create route bundle
+const router = Router();
 
 const { SECRET = "secret" } = process.env;
 
@@ -19,23 +19,31 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { User } = req.context.models;
   try {
-    const user = await User.findOne({ username: req.body.username });
-    const userInfo = { username: user.username, id: user._id };
-    if (user) {
-      const result = await bcrypt.compare(req.body.password, user.password);
-      if (result) {
-        const token = await jwt.sign({ username: user.username }, SECRET);
-        res.json({ token, userInfo });
-      } else {
-        res.status(400).json({ error: "password doesn't match" });
-      }
-    } else {
-      res.status(400).json({ error: "User doesn't exist" });
+    const { User } = req.context.models;
+    const { username, password } = req.body;
+
+    // Check if the user exists
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    // Verify the password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+
+    // Generate and return the token
+    const token = jwt.sign({ userId: user._id }, SECRET, {
+      expiresIn: "1h",
+    });
+    const userInfo = { username: user.username, id: user._id };
+    res.json({ token, userInfo });
   } catch (error) {
-    res.status(400).json({ error });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

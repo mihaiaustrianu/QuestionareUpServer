@@ -1,44 +1,38 @@
 require("dotenv").config(); // loading env variables
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const Todo = require("../models/Todo");
+const QuestionSet = require("../models/QuestionSet");
 
 // CREATE CONTEXT MIDDLEWARE
 const createContext = (req, res, next) => {
-  // put any data you want in the object below to be accessible to all routes
   req.context = {
     models: {
       User,
-      Todo,
+      QuestionSet,
     },
   };
   next();
 };
 
-// MIDDLEWARE FOR AUTHORIZATION (MAKING SURE THEY ARE LOGGED IN)
-const isLoggedIn = async (req, res, next) => {
+const isLoggedIn = (req, res, next) => {
   try {
-    // check if auth header exists
-    if (req.headers.authorization) {
-      // parse token from header
-      const token = req.headers.authorization.split(" ")[1]; //split the header and get the token
-      if (token) {
-        const payload = await jwt.verify(token, process.env.SECRET);
-        if (payload) {
-          // store user data in request object
-          req.user = payload;
-          next();
-        } else {
-          res.status(400).json({ error: "token verification failed" });
-        }
-      } else {
-        res.status(400).json({ error: "malformed auth header" });
-      }
-    } else {
-      res.status(400).json({ error: "No authorization header" });
+    const token = req.headers.authorization?.split(" ")[1]; // Optional chaining operator to handle missing authorization header
+
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
     }
+
+    jwt.verify(token, process.env.SECRET, (error, decoded) => {
+      if (error) {
+        return res.status(401).json({ error: "Token verification failed" });
+      }
+
+      req.user = decoded;
+      next();
+    });
   } catch (error) {
-    res.status(400).json({ error });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
