@@ -35,6 +35,7 @@ router.post("/create", async (req, res) => {
   }
 });
 
+// Gets all the user's questions sets
 router.get("/", async (req, res) => {
   const { userId } = req.user;
   try {
@@ -46,6 +47,41 @@ router.get("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to get question sets" });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const questionSet = await QuestionSet.findByIdAndDelete(id);
+    if (!questionSet) {
+      return res.status(404).json({ error: "The question set does not exist" });
+    }
+    res.status(200).json({ message: "Succesfully deleted" }); // Success, no content
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete question set" });
+  }
+});
+
+router.put("/:id", async (req, res) => {
+  const id = req.params.id;
+  const { title, description } = req.body;
+
+  try {
+    const questionSet = await QuestionSet.findByIdAndUpdate(
+      id,
+      { title, description },
+      { new: true }
+    );
+
+    if (!questionSet) {
+      return res.status(404).json({ error: "The question set does not exist" });
+    }
+    console.log(questionSet);
+    res.status(200).json(questionSet);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update question set" });
   }
 });
 
