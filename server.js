@@ -24,7 +24,7 @@ app.use(createContext); // create req.context
 // Routers
 app.use("/user", UserRouter);
 app.use("/api/question-sets", QuestionSetRouter);
-app.use("/api/question", QuestionRouter);
+app.use("/api/questions", QuestionRouter);
 
 // listeners
 app.listen(PORT, () => log.green("SERVER STATUS", `Listening on port ${PORT}`));
