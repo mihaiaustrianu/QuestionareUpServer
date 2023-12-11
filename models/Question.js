@@ -7,7 +7,6 @@ const AnswerSchema = new Schema({
 
 const QuestionSchema = new Schema({
   questionSetId: { type: String, required: true },
-  title: { type: String, required: true },
   text: { type: String, required: true },
   answers: { type: [AnswerSchema], required: true },
 });

@@ -7,6 +7,7 @@ const cors = require("cors"); // import cors
 const UserRouter = require("./controllers/User");
 const QuestionSetRouter = require("./controllers/QuestionSet");
 const QuestionRouter = require("./controllers/Question");
+const QuizRouter = require("./controllers/Quiz");
 const { createContext } = require("./controllers/middleware");
 
 //DESTRUCTURE ENV VARIABLES WITH DEFAULT VALUES
@@ -25,6 +26,7 @@ app.use(createContext); // create req.context
 app.use("/user", UserRouter);
 app.use("/api/question-sets", QuestionSetRouter);
 app.use("/api/questions", QuestionRouter);
+app.use("/api/quiz", QuizRouter);
 
 // listeners
 app.listen(PORT, () => log.green("SERVER STATUS", `Listening on port ${PORT}`));
