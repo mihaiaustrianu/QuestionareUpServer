@@ -2,14 +2,15 @@ const { Router } = require("express");
 const { isLoggedIn } = require("./middleware");
 const QuestionSet = require("../models/QuestionSet");
 const Question = require("../models/Question");
+const Quiz = require("../models/QuizModel");
 
 const router = Router();
 
 router.use(isLoggedIn);
 
-router.post("/", async (req, res) => {
+router.post("/create", async (req, res) => {
   try {
-    const { questionSetIds, numberOfQuestions } = req.body;
+    const { questionSetIds, numberOfQuestions, userId, timeToSolve } = req.body;
 
     // Fetch question sets based on provided IDs
     const questionSets = await QuestionSet.find({
@@ -85,10 +86,77 @@ router.post("/", async (req, res) => {
       numberOfQuestions
     );
 
-    return res.status(200).json(finalSelectedQuestions);
+    // Create a new quiz object
+    const quiz = new Quiz({
+      userId,
+      userAnswers: finalSelectedQuestions.map((question) => ({
+        questionId: question._id,
+        userSelectedAnswer: "",
+      })),
+      questions: finalSelectedQuestions,
+      score: 0,
+    });
+
+    // Save the quiz object to the database
+    await quiz.save();
+
+    return res
+      .status(200)
+      .json({ quizId: quiz._id, questions: finalSelectedQuestions });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.put("/:quizId/submit", async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    const { userAnswers } = req.body;
+
+    // Find the quiz by ID
+    const quiz = await Quiz.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({ error: "Quiz not found" });
+    }
+
+    // Update user answers in the quiz
+    quiz.userAnswers.forEach((answer) => {
+      const submittedAnswer = userAnswers[answer.questionId];
+
+      if (submittedAnswer) {
+        answer.userSelectedAnswer = submittedAnswer;
+      }
+    });
+
+    // Calculate and update the score based on correct answers (customize this logic)
+    // ...
+
+    // Save the updated quiz object
+    await quiz.save();
+
+    return res
+      .status(200)
+      .json({ message: "User answers submitted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const quizId = req.params.id;
+    console.log(quizId);
+    const quiz = await Quiz.findById(quizId);
+
+    if (quiz) {
+      return res.status(200).json(quiz);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to get quiz" });
   }
 });
 
