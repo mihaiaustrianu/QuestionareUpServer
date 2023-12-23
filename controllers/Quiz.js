@@ -160,4 +160,10 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.post("/validateToken", (req, res) => {
+  console.log(req);
+  const userId = req.user.userId;
+  res.json({ userId });
+});
+
 module.exports = router;
