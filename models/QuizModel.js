@@ -9,7 +9,10 @@ const QuizSchema = new Schema({
   userId: { type: String, required: true },
   userAnswers: { type: [UserAnswerSchema], required: true },
   score: { type: Number, default: 0 },
+  submissionDate: { type: Date },
   questions: { type: [Schema.Types.Mixed], required: true },
+  startTime: { type: Date },
+  endTime: { type: Date },
 });
 
 const Quiz = model("Quizes", QuizSchema);

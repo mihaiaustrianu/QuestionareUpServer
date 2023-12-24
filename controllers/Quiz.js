@@ -86,6 +86,9 @@ router.post("/create", async (req, res) => {
       numberOfQuestions
     );
 
+    const startTime = Date.now();
+    const endTime = startTime + timeToSolve * 1000 * 60;
+
     // Create a new quiz object
     const quiz = new Quiz({
       userId,
@@ -95,14 +98,19 @@ router.post("/create", async (req, res) => {
       })),
       questions: finalSelectedQuestions,
       score: 0,
+      startTime,
+      endTime,
     });
 
     // Save the quiz object to the database
     await quiz.save();
 
-    return res
-      .status(200)
-      .json({ quizId: quiz._id, questions: finalSelectedQuestions });
+    return res.status(200).json({
+      quizId: quiz._id,
+      questions: finalSelectedQuestions,
+      startTime,
+      endTime,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -130,6 +138,8 @@ router.put("/:quizId/submit", async (req, res) => {
       }
     });
 
+    quiz.submissionDate = new Date();
+
     // Calculate and update the score based on correct answers (customize this logic)
     // ...
 
@@ -148,7 +158,6 @@ router.put("/:quizId/submit", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const quizId = req.params.id;
-    console.log(quizId);
     const quiz = await Quiz.findById(quizId);
 
     if (quiz) {
@@ -157,6 +166,20 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to get quiz" });
+  }
+});
+
+router.get("/", async (req, res) => {
+  const { userId } = req.user;
+  try {
+    const quizes = await Quiz.find({ userId });
+
+    if (quizes) {
+      return res.status(200).json(quizes);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to get user quizes" });
   }
 });
 

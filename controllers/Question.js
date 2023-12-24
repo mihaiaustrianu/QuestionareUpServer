@@ -13,6 +13,7 @@ router.post("/:id", async (req, res) => {
     const { title, text, answers } = req.body;
 
     const newQuestion = { questionSetId, title, text, answers };
+    console.log(title);
 
     Question.create(newQuestion);
 
