@@ -140,10 +140,30 @@ router.put("/:quizId/submit", async (req, res) => {
 
     quiz.submissionDate = new Date();
 
-    // Calculate and update the score based on correct answers (customize this logic)
-    // ...
+    let score = 0;
 
-    // Save the updated quiz object
+    // Score calculation
+    quiz.questions.forEach((question) => {
+      const correctAnswers = question.answers
+        .filter((answer) => answer.isCorrect)
+        .map((answer) => answer._id);
+
+      const userSelectedAnswers =
+        quiz.userAnswers.find((answer) => answer.questionId === question._id)
+          ?.userSelectedAnswer || [];
+
+      // Check if user selected all correct answers for the question
+      const isCorrect = correctAnswers.every((correctAnswer) =>
+        userSelectedAnswers.includes(correctAnswer)
+      );
+
+      if (isCorrect) {
+        score += 1;
+      }
+    });
+
+    quiz.score = score;
+
     await quiz.save();
 
     return res
