@@ -8,13 +8,23 @@ const router = Router();
 const { SECRET = "secret" } = process.env;
 
 router.post("/signup", async (req, res) => {
-  const { User } = req.context.models;
   try {
+    const { User } = req.context.models;
     req.body.password = await bcrypt.hash(req.body.password, 10);
     const user = await User.create(req.body);
-    res.json(user);
+    res.status(200).json({ message: "User created successfully" });
   } catch (error) {
-    res.status(400).json({ error });
+    if (
+      error.code === 11000 &&
+      error.keyPattern &&
+      error.keyPattern.username === 1
+    ) {
+      return res.status(400).json({
+        error: "Username is already taken. Please choose a different username.",
+      });
+    }
+    console.error("Signup error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

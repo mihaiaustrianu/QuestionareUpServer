@@ -2,6 +2,7 @@ const { Schema, model } = require("../db/connection"); // import Schema & model
 
 const AnswerSchema = new Schema({
   answerText: { type: String, required: true },
+  answerDescription: { type: String, required: false },
   isCorrect: { type: Boolean, required: true },
 });
 

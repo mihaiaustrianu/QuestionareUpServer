@@ -110,16 +110,19 @@ router.put("/:quizId/submit", async (req, res) => {
     quiz.questions.forEach((question) => {
       const correctAnswers = question.answers
         .filter((answer) => answer.isCorrect)
-        .map((answer) => answer._id);
+        .map((answer) => String(answer._id)); // Ensure ID consistency
 
       const userSelectedAnswers =
-        quiz.userAnswers.find((answer) => answer.questionId === question._id)
-          ?.userSelectedAnswer || [];
+        quiz.userAnswers.find(
+          (answer) => answer.questionId.toString() === question._id.toString()
+        )?.userSelectedAnswer || [];
 
       // Check if user selected all correct answers for the question
-      const isCorrect = correctAnswers.every((correctAnswer) =>
-        userSelectedAnswers.includes(correctAnswer)
-      );
+      const isCorrect =
+        correctAnswers.length === userSelectedAnswers.length &&
+        correctAnswers.every((correctAnswer) =>
+          userSelectedAnswers.includes(correctAnswer)
+        );
 
       if (isCorrect) {
         score += 1;
