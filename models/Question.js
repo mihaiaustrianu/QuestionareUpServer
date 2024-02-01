@@ -2,12 +2,12 @@ const { Schema, model } = require("../db/connection"); // import Schema & model
 
 const AnswerSchema = new Schema({
   answerText: { type: String, required: true },
+  answerDescription: { type: String, required: false },
   isCorrect: { type: Boolean, required: true },
 });
 
 const QuestionSchema = new Schema({
   questionSetId: { type: String, required: true },
-  title: { type: String, required: true },
   text: { type: String, required: true },
   answers: { type: [AnswerSchema], required: true },
 });
